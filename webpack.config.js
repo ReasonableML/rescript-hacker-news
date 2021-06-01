@@ -3,10 +3,12 @@ const webpack = require('webpack');
 const CompressionPlugin = require('compression-webpack-plugin');
 const ClosureCompilerPlugin = require('webpack-closure-compiler');
 const StatsWriterPlugin = require('webpack-stats-plugin').StatsWriterPlugin;
-const ManifestPlugin = require('webpack-manifest-plugin');
+const { WebpackManifestPlugin } = require('webpack-manifest-plugin');
 const ShakePlugin = require('webpack-common-shake').Plugin;
 const UglifyJsPlugin = require('uglifyjs-webpack-plugin')
-const SWPrecacheWebpackPlugin = require('sw-precache-webpack-plugin');
+
+const {GenerateSW} = require('workbox-webpack-plugin');
+
 const rollupPluginNodeResolve = require('rollup-plugin-node-resolve');
 
 const prod = process.env.NODE_ENV == 'production';
@@ -36,6 +38,17 @@ module.exports = {
       src: path.resolve(__dirname, 'src/'),
       director: 'director/build/director',
     },
+      modules: [
+      'node_modules',
+      /**
+       * bs-platform doesn't resolve dependencies of linked packages
+       * correctly: https://github.com/BuckleScript/bucklescript/issues/1691
+       *
+       * To workaround, directly include the linked package node_modules
+       * in our resolution search path.
+       */
+      path.resolve(__dirname, '../@rescript/react/node_modules')
+    ]
   },
   module: {
     rules: [
@@ -58,32 +71,32 @@ module.exports = {
         : null,
     ].filter(Boolean),
   },
-  node: {
-    fs: 'empty',
-    net: 'empty',
-    tls: 'empty',
-  },
+  // node: {
+  //   fs: 'empty',
+  //   net: 'empty',
+  //   tls: 'empty',
+  // },
   plugins: [
     // Generate a service worker script that will precache, and keep up to date,
     // the HTML & assets that are part of the Webpack build.
-    new SWPrecacheWebpackPlugin({
+    new GenerateSW({
       // By default, a cache-busting query parameter is appended to requests
       // used to populate the caches, to ensure the responses are fresh.
       // If a URL is already hashed by Webpack, then there is no concern
       // about it being stale, and the cache-busting can be skipped.
-      dontCacheBustUrlsMatching: /\.\w{8}\./,
-      filename: 'service-worker.js',
-      minify: prod || analyze,
+      // dontCacheBustUrlsMatching: /\.\w{8}\./,
+      // filename: 'service-worker.js',
+      // minify: prod || analyze,
       navigateFallback: publicUrl + '/index.html',
-      staticFileGlobsIgnorePatterns: [/\.map$/, /asset-manifest\.json$/],
+      exclude: [/\.map$/, /asset-manifest\.json$/],
     }),
 
     // Generate a manifest file which contains a mapping of all asset filenames
     // to their corresponding output file so that tools can pick it up without
     // having to parse `index.html`.
-    new ManifestPlugin({
-      fileName: 'asset-manifest.json',
-    }),
+    // new InjectManifest({
+    //   swSrc: 'asset-manifest.json',
+    // }),
     new webpack.DefinePlugin({
       'process.env': {
         NODE_ENV: JSON.stringify(!dev ? 'production' : 'development'),
