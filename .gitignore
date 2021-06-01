@@ -18,3 +18,4 @@ lib/
 node_modules/
 *.bs.js
 yarn.lock
+.etmp
