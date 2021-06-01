@@ -1,18 +1,7 @@
 
 {
   "name": "rescript-melange-hacker-news",
-  "package-specs": [
-    {
-      "module": "es6",
-      "in-source": false,
-      "suffix": ".bs.js"
-    },
-    {
-      "module": "commonjs",
-      "in-source": true,
-      "suffix": ".js"
-    }
-  ],
+  "package-specs": ["commonjs", "es6"],
   "suffix": ".bs.js",
   "reason": {
     "react-jsx": 3

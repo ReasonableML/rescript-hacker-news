@@ -21,7 +21,7 @@ let publicUrl = '';
 module.exports = {
   mode: dev ? 'development' : 'production',
   context: __dirname,
-  entry: useRollup ? './src/Index' : './_build/default/src/Index.js',
+  entry: useRollup ? './lib/es6/src/index.bs' : './lib/js/src/index.bs',
   output: {
     filename: '[name].js',
     path: path.join(__dirname, './dist/build'),

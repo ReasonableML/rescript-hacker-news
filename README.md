@@ -7,6 +7,6 @@ See it at https://hackernewsmobile.com
 
 Source is in [src/](src/), starting from [src/index.re](src/Index.res)
 
-You can run the app locally with `yarn && yarn dev`
+You can run the app locally with `yarn && yarn dev && yarn build-static && yarn static`
 
 Build for deployment with `NODE_ENV=production yarn build`

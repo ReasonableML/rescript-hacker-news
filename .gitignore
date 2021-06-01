@@ -17,8 +17,4 @@ dist/
 lib/
 node_modules/
 *.bs.js
-esy.lock
-_esy
-_build/
-.melange.eobjs
 yarn.lock
