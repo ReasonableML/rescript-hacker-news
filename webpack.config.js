@@ -2,12 +2,12 @@ const path = require('path');
 const webpack = require('webpack');
 const CompressionPlugin = require('compression-webpack-plugin');
 const ClosureCompilerPlugin = require('webpack-closure-compiler');
-const StatsWriterPlugin = require('webpack-stats-plugin').StatsWriterPlugin;
+const { StatsWriterPlugin } = require('webpack-stats-plugin');
 const { WebpackManifestPlugin } = require('webpack-manifest-plugin');
 const ShakePlugin = require('webpack-common-shake').Plugin;
-const UglifyJsPlugin = require('uglifyjs-webpack-plugin')
+const TerserPlugin = require('terser-webpack-plugin');
 
-const {GenerateSW} = require('workbox-webpack-plugin');
+const { GenerateSW } = require('workbox-webpack-plugin');
 
 const rollupPluginNodeResolve = require('rollup-plugin-node-resolve');
 
@@ -27,7 +27,7 @@ module.exports = {
   output: {
     filename: '[name].js',
     path: path.join(__dirname, './dist/build'),
-    publicPath: '/build/',
+    publicPath: '/build/'
   },
   devServer: {
     contentBase: path.resolve(__dirname, 'public'),
@@ -36,9 +36,9 @@ module.exports = {
   resolve: {
     alias: {
       src: path.resolve(__dirname, 'src/'),
-      director: 'director/build/director',
+      director: 'director/build/director'
     },
-      modules: [
+    modules: [
       'node_modules',
       /**
        * bs-platform doesn't resolve dependencies of linked packages
@@ -54,27 +54,37 @@ module.exports = {
     rules: [
       {
         test: /\.png$/,
-        loader: 'file-loader',
+        loader: 'file-loader'
       },
       {
         test: /\.css$/,
-        use: [{loader: 'style-loader'}, {loader: 'css-loader'}],
+        use: [ { loader: 'style-loader' }, { loader: 'css-loader' } ]
       },
       useRollup
         ? {
             test: /\.js$/,
             loader: 'rollup-loader',
             options: {
-              plugins: [rollupPluginNodeResolve({module: true})],
-            },
+              plugins: [ rollupPluginNodeResolve({ module: true }) ]
+            }
           }
-        : null,
-    ].filter(Boolean),
+        : null
+    ].filter(Boolean)
   },
   // node: {
   //   fs: 'empty',
   //   net: 'empty',
   //   tls: 'empty',
+  // },
+  // prod ? optimization: {
+  //   minimize: true,
+  //   minimizer: [new TerserPlugin({
+  //       extractComments: comments: /^\**!|^ [0-9]+ $|@preserve|@license/,
+  //     })],
+  // } : null,
+  // optimization: {
+  //   minimize: true,
+  //   minimizer: [new TerserPlugin()],
   // },
   plugins: [
     // Generate a service worker script that will precache, and keep up to date,
@@ -88,7 +98,7 @@ module.exports = {
       // filename: 'service-worker.js',
       // minify: prod || analyze,
       navigateFallback: publicUrl + '/index.html',
-      exclude: [/\.map$/, /asset-manifest\.json$/],
+      exclude: [ /\.map$/, /asset-manifest\.json$/ ]
     }),
 
     // Generate a manifest file which contains a mapping of all asset filenames
@@ -100,37 +110,42 @@ module.exports = {
     new webpack.DefinePlugin({
       'process.env': {
         NODE_ENV: JSON.stringify(!dev ? 'production' : 'development'),
-        PUBLIC_URL: JSON.stringify(publicUrl + '/build'),
-      },
+        PUBLIC_URL: JSON.stringify(publicUrl + '/build')
+      }
     }),
     useClosureCompiler
       ? new ClosureCompilerPlugin({
           compiler: {
             language_in: 'ECMASCRIPT6',
-            language_out: 'ECMASCRIPT5',
+            language_out: 'ECMASCRIPT5'
           },
-          concurrency: 3,
+          concurrency: 3
         })
       : null,
-    prod ? new UglifyJsPlugin() : null,
+    prod ? new TerserPlugin() : null,
     analyze
-      ? new UglifyJsPlugin({
-          uglifyOptions: {
-            compress: {
-              warnings: false,
-            },
-            output: {
-              comments: /^\**!|^ [0-9]+ $|@preserve|@license/,
-            },
+      ? prod
+        ? optimization
+        : {
+            minimize: true,
+            minimizer: [
+              new TerserPlugin({
+                extractComments: /^\**!|^ [0-9]+ $|@preserve|@license/,
+                terserOptions: {
+                  compress: {
+                    warnings: false
+                  }
+                }
+              })
+            ]
           }
-        })
       : null,
     true
       ? new CompressionPlugin({
           algorithm: 'gzip',
           test: /\.(js|css)$/,
           threshold: 10240,
-          minRatio: 0.8,
+          minRatio: 0.8
         })
       : null,
     true
@@ -143,9 +158,9 @@ module.exports = {
             });
             delete data.children;
             return JSON.stringify(data, null, 2);
-          },
+          }
         })
       : null,
-    useShakePlugin ? new ShakePlugin() : null,
-  ].filter(Boolean),
+    useShakePlugin ? new ShakePlugin() : null
+  ].filter(Boolean)
 };
