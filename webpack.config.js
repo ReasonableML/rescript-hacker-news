@@ -1,15 +1,15 @@
 const path = require('path');
 const webpack = require('webpack');
 const CompressionPlugin = require('compression-webpack-plugin');
-const ClosureCompilerPlugin = require('webpack-closure-compiler');
+const ClosureCompilerPlugin = require('@ampproject/rollup-plugin-closure-compiler');
 const { StatsWriterPlugin } = require('webpack-stats-plugin');
-const { WebpackManifestPlugin } = require('webpack-manifest-plugin');
 const ShakePlugin = require('webpack-common-shake').Plugin;
 const TerserPlugin = require('terser-webpack-plugin');
+const { WebpackBundleSizeAnalyzerPlugin } = require('webpack-bundle-size-analyzer');
 
 const { GenerateSW } = require('workbox-webpack-plugin');
 
-const rollupPluginNodeResolve = require('rollup-plugin-node-resolve');
+const rollupPluginNodeResolve = require('@rollup/plugin-node-resolve');
 
 const prod = process.env.NODE_ENV == 'production';
 const dev = !prod && process.env.DEV !== '0';
@@ -87,6 +87,7 @@ module.exports = {
   //   minimizer: [new TerserPlugin()],
   // },
   plugins: [
+    new WebpackBundleSizeAnalyzerPlugin('./dependency-size-report.txt'),
     // Generate a service worker script that will precache, and keep up to date,
     // the HTML & assets that are part of the Webpack build.
     new GenerateSW({
